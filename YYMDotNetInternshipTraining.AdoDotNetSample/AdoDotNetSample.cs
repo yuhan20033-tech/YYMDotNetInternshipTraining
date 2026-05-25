@@ -32,7 +32,7 @@ public class AdoDotNetSample
       ,[CreatedBy]
       ,[ModifiedDateTime]
       ,[ModifiedBy]
-  FROM [PPSDotNetInternshipTraining].[dbo].[Tbl_Student] Where IsDelete = 0";
+  FROM [YYMDotNetInternshipTraining].[dbo].[Tbl_Student] Where IsDelete = 0";
 
         SqlCommand command = new SqlCommand(sql, connection);
         SqlDataAdapter adapter = new SqlDataAdapter(command);
@@ -77,7 +77,7 @@ public class AdoDotNetSample
       ,[CreatedBy]
       ,[ModifiedDateTime]
       ,[ModifiedBy]
-  FROM [PPSDotNetInternshipTraining].[dbo].[Tbl_Student] Where StudentId = @StudentId and IsDelete = 0";
+  FROM [YYMDotNetInternshipTraining].[dbo].[Tbl_Student] Where StudentId = @StudentId and IsDelete = 0";
 
         SqlConnection connection = new SqlConnection(builder.ConnectionString);
 

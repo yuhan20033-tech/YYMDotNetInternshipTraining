@@ -27,7 +27,7 @@ public class DapperSample
       ,[CreatedBy]
       ,[ModifiedDateTime]
       ,[ModifiedBy]
-  FROM [PPSDotNetInternshipTraining].[dbo].[Tbl_Student] Where IsDelete = 0";
+  FROM [YYMDotNetInternshipTraining].[dbo].[Tbl_Student] Where IsDelete = 0";
 
         using IDbConnection sqlConnection = new SqlConnection(builder.ConnectionString);
         sqlConnection.Open();
@@ -51,7 +51,7 @@ public class DapperSample
       ,[CreatedBy]
       ,[ModifiedDateTime]
       ,[ModifiedBy]
-  FROM [PPSDotNetInternshipTraining].[dbo].[Tbl_Student] Where StudentId = @StudentId and IsDelete = 0";
+  FROM [PDotNetInternshipTraining].[dbo].[Tbl_Student] Where StudentId = @StudentId and IsDelete = 0";
 
 
         using IDbConnection sqlConnection = new SqlConnection(builder.ConnectionString);

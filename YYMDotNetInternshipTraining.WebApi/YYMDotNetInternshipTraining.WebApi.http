@@ -1,0 +1,6 @@
+@YYMDotNetInternshipTraining.WebApi_HostAddress = http://localhost:5289
+
+GET {{YYMDotNetInternshipTraining.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
