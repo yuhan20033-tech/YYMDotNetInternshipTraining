@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Expense Analytics Engine</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 antialiased flex h-screen overflow-hidden">
+
+    <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3 pointer-events-none"></div>
+
+    <aside
+        class="w-72 bg-slate-900 text-slate-300 flex flex-col justify-between border-r border-slate-800 shrink-0 z-20">
+        <div>
+            <div class="h-20 flex items-center px-6 border-b border-slate-800 space-x-3">
+                <div class="p-2 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-600/30">
+                    <i class="fa-solid fa-chart-pie text-lg"></i>
+                </div>
+                <div>
+                    <span class="font-bold text-white tracking-tight block text-base">FinTrack Pro</span>
+                    <span class="text-xs text-slate-500 font-medium tracking-wide uppercase">Core Management</span>
+                </div>
+            </div>
+
+            <nav class="p-4 space-y-1.5" id="sidebar-nav">
+                <button onclick="switchTab('dashboard')"
+                    class="sidebar-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold tracking-wide bg-slate-800 text-white transition duration-200">
+                    <i class="fa-solid fa-grid-2 text-indigo-400 w-5 text-left"></i><span>Dashboard Overview</span>
+                </button>
+                <button onclick="switchTab('users')"
+                    class="sidebar-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium tracking-wide text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition duration-200">
+                    <i class="fa-solid fa-user-group w-5 text-left text-slate-500"></i><span>Users Directory</span>
+                </button>
+                <button onclick="switchTab('budgets')"
+                    class="sidebar-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium tracking-wide text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition duration-200">
+                    <i class="fa-solid fa-vault w-5 text-left text-slate-500"></i><span>Budget Control</span>
+                </button>
+                <button onclick="switchTab('expenses')"
+                    class="sidebar-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium tracking-wide text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition duration-200">
+                    <i class="fa-solid fa-receipt w-5 text-left text-slate-500"></i><span>Expense Ledgers</span>
+                </button>
+                <button onclick="switchTab('reports')"
+                    class="sidebar-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium tracking-wide text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition duration-200">
+                    <i class="fa-solid fa-file-chart-column w-5 text-left text-slate-500"></i><span>Monthly
+                        Statements</span>
+                </button>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex items-center space-x-3">
+            <div
+                class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold text-white border border-slate-600">
+                AD
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-slate-200">Administrator</p>
+                <p class="text-[10px] font-mono text-slate-500">System Live State</p>
+            </div>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header class="h-20 bg-white border-b border-slate-200/80 flex items-center justify-between px-8 shrink-0">
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-semibold bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-mono"
+                    id="live-clock-stamp">2026-05-26</span>
+                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                <span class="text-xs text-slate-400 font-medium">Production Database</span>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-8 max-w-[1600px] w-full mx-auto">
+            <div id="tab-dashboard" class="tab-content space-y-8">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">System Dashboard</h1>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div
+                        class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between transition hover:shadow-md">
+                        <div class="space-y-1">
+                            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Users</p>
+                            <p class="text-3xl font-bold text-slate-900 font-mono tracking-tight" id="count-users">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center"><i
+                                class="fa-solid fa-users text-lg"></i></div>
+                    </div>
+                    <div
+                        class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between transition hover:shadow-md">
+                        <div class="space-y-1">
+                            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Allocated Budget</p>
+                            <p class="text-3xl font-bold text-slate-900 font-mono tracking-tight" id="count-budgets">0
+                            </p>
+                        </div>
+                        <div
+                            class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+                            <i class="fa-solid fa-scale-balanced text-lg"></i>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between transition hover:shadow-md">
+                        <div class="space-y-1">
+                            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Expenses</p>
+                            <p class="text-3xl font-bold text-slate-900 font-mono tracking-tight" id="count-expenses">0
+                            </p>
+                        </div>
+                        <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center"><i
+                                class="fa-solid fa-receipt text-lg"></i></div>
+                    </div>
+                    <div
+                        class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between transition hover:shadow-md">
+                        <div class="space-y-1">
+                            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Calculated Reports</p>
+                            <p class="text-3xl font-bold text-slate-900 font-mono tracking-tight" id="count-reports">0
+                            </p>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center">
+                            <i class="fa-solid fa-file-invoice text-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-users" class="tab-content hidden space-y-6">
+                <div class="flex justify-between items-end">
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Identity & Profiles</h1>
+                    </div>
+                    <button onclick="openUserModal()"
+                        class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-sm transition duration-150 flex items-center space-x-2"><i
+                            class="fa-solid fa-plus text-[10px]"></i><span>Add New Profile</span></button>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="bg-slate-50/70 border-b border-slate-200 text-slate-400 text-[11px] uppercase font-bold tracking-wider">
+                                    <th class="px-6 py-4 w-24">ID</th>
+                                    <th class="px-6 py-4">Name String</th>
+                                    <th class="px-6 py-4">Secure Email Address</th>
+                                    <th class="px-6 py-4">Hash Value</th>
+                                    <th class="px-6 py-4">Timestamp</th>
+                                    <th class="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-users" class="divide-y divide-slate-100 bg-white text-sm text-slate-600">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-budgets" class="tab-content hidden space-y-6">
+                <div class="flex justify-between items-end">
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Budget Resource Mapping</h1>
+                    </div>
+                    <button onclick="openBudgetModal()"
+                        class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-sm transition duration-150 flex items-center space-x-2"><i
+                            class="fa-solid fa-plus text-[10px]"></i><span>Provision Cap</span></button>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="bg-slate-50/70 border-b border-slate-200 text-slate-400 text-[11px] uppercase font-bold tracking-wider">
+                                    <th class="px-6 py-4 w-24">ID</th>
+                                    <th class="px-6 py-4">Mapped Account</th>
+                                    <th class="px-6 py-4">Limit Threshold</th>
+                                    <th class="px-6 py-4">Activation Range</th>
+                                    <th class="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-budgets" class="divide-y divide-slate-100 bg-white text-sm text-slate-600">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-expenses" class="tab-content hidden space-y-10">
+                <div class="space-y-6">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h1 class="text-xl font-bold text-slate-900 tracking-tight">Transaction Ledger Entries</h1>
+                        </div>
+                        <button onclick="openExpenseModal()"
+                            class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-sm transition duration-150 flex items-center space-x-2"><i
+                                class="fa-solid fa-plus text-[10px]"></i><span>Log Transaction</span></button>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr
+                                        class="bg-slate-50/70 border-b border-slate-200 text-slate-400 text-[11px] uppercase font-bold tracking-wider">
+                                        <th class="px-6 py-4 w-24">ID</th>
+                                        <th class="px-6 py-4">User Owner</th>
+                                        <th class="px-6 py-4">Budget ref</th>
+                                        <th class="px-6 py-4">Meta Title</th>
+                                        <th class="px-6 py-4">Amount</th>
+                                        <th class="px-6 py-4">Posting Date</th>
+                                        <th class="px-6 py-4">Annotation Notes</th>
+                                        <th class="px-6 py-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-expenses"
+                                    class="divide-y divide-slate-100 bg-white text-sm text-slate-600"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900 tracking-tight">Weekly Expenses Breakdown</h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="grid-weekly-expenses"></div>
+                </div>
+            </div>
+
+            <div id="tab-reports" class="tab-content hidden space-y-6">
+                <div class="flex justify-between items-end">
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Monthly Diagnostic Statements</h1>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="bg-slate-50/70 border-b border-slate-200 text-slate-400 text-[11px] uppercase font-bold tracking-wider">
+                                    <th class="px-6 py-4 w-24">ID</th>
+                                    <th class="px-6 py-4">User Scope</th>
+                                    <th class="px-6 py-4">Statement Format</th>
+                                    <th class="px-6 py-4">Period</th>
+                                    <th class="px-6 py-4">Target Limit</th>
+                                    <th class="px-6 py-4">Observed Spend</th>
+                                    <th class="px-6 py-4">Remaining Liquidity</th>
+                                    <th class="px-6 py-4 text-right">Status Flag</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-reports" class="divide-y divide-slate-100 bg-white text-sm text-slate-600">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="form-modal"
+        class="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-50 flex items-center justify-center hidden opacity-0 transition-all duration-200">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden border border-slate-200 transform scale-95 transition-all duration-200"
+            id="modal-box">
+            <div class="bg-slate-900 px-6 py-4 text-white flex justify-between items-center">
+                <h3 id="modal-title" class="font-bold text-sm tracking-wide uppercase text-slate-200">Parameter
+                    Configuration Form</h3>
+                <button onclick="closeModal()"
+                    class="text-slate-400 hover:text-white transition text-lg">&times;</button>
+            </div>
+            <form id="modal-form" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="form-type">
+                <input type="hidden" id="form-id">
+                <input type="hidden" id="form-patch-mode" value="false">
+
+                <div id="form-fields" class="space-y-4"></div>
+
+                <div class="flex justify-end space-x-2 pt-4 border-t border-slate-100 text-xs">
+                    <button type="button" onclick="closeModal()"
+                        class="px-4 py-2.5 font-semibold text-slate-500 hover:bg-slate-50 rounded-xl transition">Cancel</button>
+                    <button type="submit"
+                        class="px-4 py-2.5 font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm transition">Commit
+                        Records</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        
+            let state = {
+    users: [
+        { id: 1, name: "John", email: "john@gmail.com", password: "12345", createdDate: "2026-05-01" },
+        { id: 2, name: "Smith", email: "smith@gmail.com", password: "abc123", createdDate: "2026-05-02" },
+        { id: 3, name: "David", email: "david@gmail.com", password: "pass3", createdDate: "2026-05-03" },
+        { id: 4, name: "Emma", email: "emma@gmail.com", password: "pass4", createdDate: "2026-05-04" },
+        { id: 5, name: "Michael", email: "michael@gmail.com", password: "pass5", createdDate: "2026-05-05" },
+        { id: 6, name: "Sophia", email: "sophia@gmail.com", password: "pass6", createdDate: "2026-05-06" },
+        { id: 7, name: "James", email: "james@gmail.com", password: "pass7", createdDate: "2026-05-07" },
+        { id: 8, name: "Olivia", email: "olivia@gmail.com", password: "pass8", createdDate: "2026-05-08" },
+        { id: 9, name: "Robert", email: "robert@gmail.com", password: "pass9", createdDate: "2026-05-09" },
+        { id: 10, name: "Ava", email: "ava@gmail.com", password: "pass10", createdDate: "2026-05-10" },
+       
+    ],
+    budgets: [
+        { id: 1, userId: 1, limitAmount: 100000, startDate: "2026-05-01", endDate: "2026-05-31" },
+        { id: 2, userId: 2, limitAmount: 50000, startDate: "2026-05-02", endDate: "2026-05-31" },
+        { id: 3, userId: 3, limitAmount: 120000, startDate: "2026-05-03", endDate: "2026-05-31" },
+        { id: 4, userId: 4, limitAmount: 85000, startDate: "2026-05-04", endDate: "2026-05-31" },
+        { id: 5, userId: 5, limitAmount: 200000, startDate: "2026-05-05", endDate: "2026-05-31" },
+        { id: 6, userId: 6, limitAmount: 60000, startDate: "2026-05-06", endDate: "2026-05-31" },
+        { id: 7, userId: 7, limitAmount: 150000, startDate: "2026-05-07", endDate: "2026-05-31" },
+        { id: 8, userId: 8, limitAmount: 90000, startDate: "2026-05-08", endDate: "2026-05-31" },
+        { id: 9, userId: 9, limitAmount: 45000, startDate: "2026-05-09", endDate: "2026-05-31" },
+        { id: 10, userId: 10, limitAmount: 130000, startDate: "2026-05-10", endDate: "2026-05-31" },
+        
+    ],
+    expenses: [
+        { id: 1, userId: 1, budgetId: 1, title: "Lunch Matrix", amount: 7000, expenseDate: "2026-05-02", note: "Lunch with clients" },
+        { id: 2, userId: 2, budgetId: 2, title: "Leather Shoes", amount: 15000, expenseDate: "2026-05-04", note: "Shopping mall" },
+        { id: 3, userId: 1, budgetId: 1, title: "Server Subscriptions", amount: 24500, expenseDate: "2026-05-05", note: "Cloud hosting production infrastructure" },
+        { id: 4, userId: 1, budgetId: 1, title: "Coffee Bundle", amount: 3500, expenseDate: "2026-05-08", note: "Team office refreshments" },
+        { id: 5, userId: 3, budgetId: 3, title: "Office Stationery", amount: 12000, expenseDate: "2026-05-10", note: "A4 papers and pens" },
+        { id: 6, userId: 4, budgetId: 4, title: "Internet Bill", amount: 45000, expenseDate: "2026-05-12", note: "Monthly fiber internet" },
+        { id: 7, userId: 5, budgetId: 5, title: "Marketing Ads", amount: 150000, expenseDate: "2026-05-14", note: "Facebook advertisement campaign" },
+        { id: 8, userId: 6, budgetId: 6, title: "Taxi Fare", amount: 8000, expenseDate: "2026-05-15", note: "Meeting with partner company" },
+        { id: 9, userId: 7, budgetId: 7, title: "Software License", amount: 95000, expenseDate: "2026-05-16", note: "Adobe Creative Cloud subscription" },
+        { id: 10, userId: 8, budgetId: 8, title: "Water Supply", amount: 5000, expenseDate: "2026-05-18", note: "Drinking water bottles for team" },
+        { id: 11, userId: 9, budgetId: 9, title: "Dinner Team", amount: 38000, expenseDate: "2026-05-19", note: "Welcome dinner for new intern" },
+        { id: 12, userId: 10, budgetId: 10, title: "Medical Kit", amount: 25000, expenseDate: "2026-05-20", note: "First-aid box replenishment" },
+        { id: 18, userId: 5, budgetId: 5, title: "Client Coffee", amount: 14000, expenseDate: "2026-05-27", note: "Project discussion at cafe" }
+    ],
+    reports: []
+};
+
+        // UI Toast Engine
+        function showToast(method, endpoint) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = "bg-slate-900 border border-slate-800 text-white px-4 py-3 rounded-xl shadow-xl flex items-center space-x-3 text-xs transition-all duration-300 transform translate-x-12 opacity-0 font-mono";
+
+            let methodColor = "text-blue-400";
+            if (method === "POST") methodColor = "text-emerald-400";
+            if (method === "PUT") methodColor = "text-amber-400";
+            if (method === "PATCH") methodColor = "text-indigo-400";
+            if (method === "DELETE") methodColor = "text-rose-400";
+
+            toast.innerHTML = `
+                <span class="${methodColor} font-bold">${method}</span>
+                <span class="text-slate-400">${endpoint}</span>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-x-12');
+            }, 50);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-10px]');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        function getWeekNumber(dateString) {
+            const date = new Date(dateString);
+            date.setHours(0, 0, 0, 0);
+            date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
+            const week1 = new Date(date.getFullYear(), 0, 4);
+            return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('#sidebar-nav button').forEach(btn => {
+                btn.className = "sidebar-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium tracking-wide text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition duration-200";
+                const icon = btn.querySelector('i');
+                if (icon) icon.className = icon.className.replace('text-indigo-400', 'text-slate-500');
+            });
+
+            const activeBtn = event.currentTarget;
+            activeBtn.className = "sidebar-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold tracking-wide bg-slate-800 text-white transition duration-200";
+            const activeIcon = activeBtn.querySelector('i');
+            if (activeIcon) activeIcon.className = activeIcon.className.replace('text-slate-500', 'text-indigo-400');
+
+            if (tabId === 'users') showToast('GET', '/users');
+            if (tabId === 'budgets') showToast('GET', '/budgets');
+            if (tabId === 'expenses') showToast('GET', '/expenses');
+            if (tabId === 'reports') showToast('GET', '/reports');
+
+            renderAll();
+        }
+
+        function renderAll() {
+            calculateMonthlyReportsEngine();
+            updateDashboardCounters();
+            renderUsers();
+            renderBudgets();
+            renderExpenses();
+            renderWeeklyExpenses();
+            renderReportsTable();
+        }
+
+        function updateDashboardCounters() {
+            document.getElementById('count-users').innerText = state.users.length;
+            document.getElementById('count-budgets').innerText = state.budgets.length;
+            document.getElementById('count-expenses').innerText = state.expenses.length;
+            document.getElementById('count-reports').innerText = state.reports.length;
+        }
+
+        function getUserName(userId) {
+            const user = state.users.find(u => u.id == userId);
+            return user ? user.name : `Unknown (${userId})`;
+        }
+
+        function inspectEntity(entity, id) {
+            showToast('GET', `/api/${entity}/${id}`);
+            const item = state[entity].find(x => x.id == id);
+            alert(`[GET /api/${entity}/${id} Response Data]\n\n${JSON.stringify(item, null, 4)}`);
+        }
+
+        function renderUsers() {
+            document.getElementById('table-users').innerHTML = state.users.map(u => `
+        <tr class="hover:bg-slate-50/60 transition">
+            <td class="px-6 py-4 font-mono font-medium text-slate-400 text-xs cursor-pointer hover:text-indigo-600" onclick="inspectEntity('users', ${u.id})"><i class="fa-solid fa-magnifying-glass text-[10px] mr-1.5 opacity-40"></i>${u.id}</td>
+            <td class="px-6 py-4 font-semibold text-slate-900">${u.name}</td>
+            <td class="px-6 py-4 font-medium">${u.email}</td>
+            <td class="px-6 py-4 font-mono text-slate-300 text-xs tracking-widest">••••••••</td>
+            <td class="px-6 py-4 text-xs text-slate-400 font-mono">${u.createdDate}</td>
+            <td class="px-6 py-4 text-right text-xs space-x-1">
+                <button onclick="openUserModal(${u.id}, true)" class="text-slate-700 hover:text-indigo-600 font-semibold bg-slate-100 hover:bg-indigo-50 px-2.5 py-1 rounded-lg border border-slate-200 transition">Edit</button>
+                <button onclick="deleteEntity('users', ${u.id})" class="text-slate-400 hover:text-rose-600 px-2.5 py-1 transition"><i class="fa-solid fa-trash-can"></i></button>
+            </td>
+        </tr>
+    `).join('');
+        }
+        function renderBudgets() {
+            document.getElementById('table-budgets').innerHTML = state.budgets.map(b => `
+        <tr class="hover:bg-slate-50/60 transition">
+            <td class="px-6 py-4 font-mono font-medium text-slate-400 text-xs cursor-pointer hover:text-indigo-600" onclick="inspectEntity('budgets', ${b.id})"><i class="fa-solid fa-magnifying-glass text-[10px] mr-1.5 opacity-40"></i>${b.id}</td>
+            <td class="px-6 py-4 font-semibold text-slate-900">${getUserName(b.userId)}</td>
+            <td class="px-6 py-4 font-mono font-semibold text-emerald-600">${b.limitAmount.toLocaleString()} MMK</td>
+            <td class="px-6 py-4 text-xs font-medium text-slate-500"><span class="bg-slate-100 px-2 py-1 rounded border border-slate-200">${b.startDate}</span> <span class="text-slate-300 mx-1">→</span> <span class="bg-slate-100 px-2 py-1 rounded border border-slate-200">${b.endDate}</span></td>
+            <td class="px-6 py-4 text-right text-xs space-x-1">
+                <button onclick="openBudgetModal(${b.id})" class="text-slate-700 hover:text-indigo-600 font-semibold bg-slate-100 hover:bg-indigo-50 px-2.5 py-1 rounded-lg border border-slate-200 transition">Edit</button>
+                <button onclick="deleteEntity('budgets', ${b.id})" class="text-slate-400 hover:text-rose-600 px-2.5 py-1 transition"><i class="fa-solid fa-trash-can"></i></button>
+            </td>
+        </tr>
+    `).join('');
+        }
+
+        function renderExpenses() {
+            document.getElementById('table-expenses').innerHTML = state.expenses.map(e => `
+        <tr class="hover:bg-slate-50/60 transition">
+            <td class="px-6 py-4 font-mono font-medium text-slate-400 text-xs cursor-pointer hover:text-indigo-600" onclick="inspectEntity('expenses', ${e.id})"><i class="fa-solid fa-magnifying-glass text-[10px] mr-1.5 opacity-40"></i>${e.id}</td>
+            <td class="px-6 py-4 font-semibold text-slate-900">${getUserName(e.userId)}</td>
+            <td class="px-6 py-4 font-mono text-xs text-slate-400">${e.budgetId}</td>
+            <td class="px-6 py-4 font-medium text-slate-800">${e.title}</td>
+            <td class="px-6 py-4 font-mono font-bold text-rose-600">${e.amount.toLocaleString()} MMK</td>
+            <td class="px-6 py-4 text-xs font-mono text-slate-400">${e.expenseDate}</td>
+            <td class="px-6 py-4 text-xs text-slate-400 italic max-w-xs truncate">${e.note || '-'}</td>
+            <td class="px-6 py-4 text-right text-xs space-x-1">
+                <button onclick="openExpenseModal(${e.id}, true)" class="text-slate-700 hover:text-indigo-600 font-semibold bg-slate-100 hover:bg-indigo-50 px-2.5 py-1 rounded-lg border border-slate-200 transition">Edit</button>
+                <button onclick="deleteEntity('expenses', ${e.id})" class="text-slate-400 hover:text-rose-600 px-2.5 py-1 transition"><i class="fa-solid fa-trash-can"></i></button>
+            </td>
+        </tr>
+    `).join('');
+        }
+
+        function renderWeeklyExpenses() {
+            const weeklyGroups = {};
+
+            state.expenses.forEach(e => {
+                const dateObj = new Date(e.expenseDate);
+                const year = dateObj.getFullYear();
+                const weekNum = getWeekNumber(e.expenseDate);
+                const groupKey = `${e.userId}_${year}_W${weekNum}`;
+
+                if (!weeklyGroups[groupKey]) {
+                    weeklyGroups[groupKey] = {
+                        userId: e.userId,
+                        label: `Week ${weekNum} (${year})`,
+                        totalAmount: 0,
+                        items: []
+                    };
+                }
+                weeklyGroups[groupKey].totalAmount += parseInt(e.amount || 0);
+                weeklyGroups[groupKey].items.push(e);
+            });
+
+            const container = document.getElementById('grid-weekly-expenses');
+            if (Object.keys(weeklyGroups).length === 0) {
+                container.innerHTML = `<div class="col-span-full bg-slate-100 border border-slate-200 text-slate-400 p-6 rounded-2xl text-center text-xs italic">No weekly tracking distributions calculated yet.</div>`;
+                return;
+            }
+
+            // Object ထဲက Data တွေကို Card Grid UI ပုံစံအဖြစ် ပြောင်းလဲထုတ်ပေးခြင်း
+            container.innerHTML = Object.values(weeklyGroups).map(w => {
+                // ဝယ်ယူခဲ့သော ပစ္စည်းတစ်ခုချင်းစီ၏ စာရင်းကို HTML List ပြုလုပ်ခြင်း
+                const itemsListHtml = w.items.map(item => `
+            <div class="flex justify-between items-center py-2 border-b border-slate-100 last:border-0 text-xs">
+                <div class="space-y-0.5">
+                    <p class="font-medium text-slate-800">${item.title}</p>
+                    <p class="text-[10px] font-mono text-slate-400">${item.expenseDate}</p>
+                </div>
+                <span class="font-mono font-semibold text-slate-600">${parseInt(item.amount).toLocaleString()} MMK</span>
+            </div>
+        `).join('');
+
+                // ကတ် (Card) တစ်ခုချင်းစီ၏ HTML အပြင်ဘက် Wrapper ကို ပြန်ပိတ်ပြီး Return ပြန်ပေးခြင်း
+                return `
+            <div class="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 flex flex-col justify-between transition hover:shadow-md">
+                <div class="pb-3 border-b border-slate-100 flex justify-between items-start">
+                    <div>
+                        <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-md uppercase tracking-wider">${w.label}</span>
+                        <h3 class="text-sm font-bold text-slate-900 mt-1.5">${getUserName(w.userId)}</h3>
+                    </div>
+                    <span class="bg-slate-100 text-slate-600 text-[10px] font-mono font-semibold px-2 py-1 rounded-md border border-slate-200">${w.items.length} Entries</span>
+                </div>
+                
+                <div class="my-4 space-y-1 divide-y divide-slate-50 max-h-48 overflow-y-auto pr-1">
+                    ${itemsListHtml}
+                </div>
+
+                <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Weekly Cumulative:</span>
+                    <span class="text-base font-mono font-bold text-rose-600">${w.totalAmount.toLocaleString()} MMK</span>
+                </div>
+            </div>
+        `;
+            }).join('');
+        }
+
+        // AUTO GENERATION REPORT ENGINE (Fixed & Completed)
+        function calculateMonthlyReportsEngine() {
+            const dynamicReports = [];
+            let reportCounter = 1;
+
+            state.users.forEach(user => {
+                const userBudget = state.budgets.find(b => b.userId == user.id);
+                const totalBudget = userBudget ? userBudget.limitAmount : 0;
+                const userExpenses = state.expenses.filter(e => e.userId == user.id);
+
+                let totalSpent = 0;
+                userExpenses.forEach(e => totalSpent += parseInt(e.amount || 0));
+
+                const remainingLiquidity = totalBudget - totalSpent;
+
+                dynamicReports.push({
+                    id: reportCounter++,
+                    userId: user.id,
+                    reportName: "System Consolidated Log",
+                    reportMonth: "May 2026",
+                    targetLimit: totalBudget,
+                    observedSpend: totalSpent,
+                    remainingLiquidity: remainingLiquidity
+                });
+            });
+
+            state.reports = dynamicReports;
+        }
+        function renderReportsTable() {
+            document.getElementById('table-reports').innerHTML = state.reports.map(r => {
+                const statusColor = r.remainingLiquidity < 0 ? "bg-rose-50 text-rose-700 border-rose-200" : "bg-emerald-50 text-emerald-700 border-emerald-200";
+                const statusText = r.remainingLiquidity < 0 ? "Over Budget" : "Healthy Status";
+
+                return `
+            <tr class="hover:bg-slate-50/60 transition">
+                <td class="px-6 py-4 font-mono font-medium text-slate-400 text-xs">${r.id}</td>
+                <td class="px-6 py-4 font-semibold text-slate-900">${getUserName(r.userId)}</td>
+                <td class="px-6 py-4 text-xs font-medium text-slate-500">${r.reportName}</td>
+                <td class="px-6 py-4 text-xs font-mono text-slate-600">${r.reportMonth}</td>
+                <td class="px-6 py-4 font-mono text-slate-700 font-semibold">${r.targetLimit.toLocaleString()} MMK</td>
+                <td class="px-6 py-4 font-mono text-rose-600 font-bold">${r.observedSpend.toLocaleString()} MMK</td>
+                <td class="px-6 py-4 font-mono ${r.remainingLiquidity < 0 ? 'text-rose-600' : 'text-emerald-600'} font-bold">${r.remainingLiquidity.toLocaleString()} MMK</td>
+                
+                <td class="px-6 py-4 text-right text-xs whitespace-nowrap space-x-2">
+                    <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase border tracking-wider ${statusColor}">${statusText}</span>
+                    <button onclick="deleteEntity('reports', ${r.id})" class="text-slate-400 hover:text-rose-600 px-2 py-1 transition cursor-pointer" title="Delete Statement">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+            }).join('');
+        }
+        // Modal Form Management Utilities
+        function openModal(title, fieldsHtml, type, id = '', isPatch = false) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('form-fields').innerHTML = fieldsHtml;
+            document.getElementById('form-type').value = type;
+            document.getElementById('form-id').value = id;
+            document.getElementById('form-patch-mode').value = isPatch ? "true" : "false";
+
+            const modal = document.getElementById('form-modal');
+            const box = document.getElementById('modal-box');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                box.classList.remove('scale-95');
+            }, 5);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('form-modal');
+            const box = document.getElementById('modal-box');
+            modal.classList.add('opacity-0');
+            box.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+        }
+
+        // Dynamic Field Triggers for Identity, Budgets, and Expenses (Both PUT & PATCH styles supported)
+        function openUserModal(id = null, isPatch = false) {
+            const user = id ? state.users.find(u => u.id == id) : null;
+            const title = user ? (isPatch ? `Patch Profile: ${user.name}` : `Update Profile: ${user.name}`) : "Create New User Profile";
+
+            const html = `
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">User Full Name</label>
+                    <input type="text" id="input-name" value="${user ? user.name : ''}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" ${user && !isPatch ? 'required' : ''}>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Secure Email Address</label>
+                    <input type="email" id="input-email" value="${user ? user.email : ''}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" ${user && !isPatch ? 'required' : ''}>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Password String Key</label>
+                    <input type="password" id="input-password" value="${user ? user.password : ''}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" ${user && !isPatch ? 'required' : ''}>
+                </div>
+            `;
+            openModal(title, html, 'users', id, isPatch);
+        }
+
+        function openBudgetModal(id = null) {
+            const budget = id ? state.budgets.find(b => b.id == id) : null;
+            const title = budget ? `Modify Budget Context Object #${id}` : "Provision New Budget Ceiling Cap";
+
+            const userOptions = state.users.map(u => `<option value="${u.id}" ${budget && budget.userId == u.id ? 'selected' : ''}>${u.name}</option>`).join('');
+
+            const html = `
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Map Target Profile Account</label>
+                    <select id="input-userId" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" required>
+                        ${userOptions}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Limit Threshold Amount (MMK)</label>
+                    <input type="number" id="input-limitAmount" value="${budget ? budget.limitAmount : ''}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" required>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Activation Start</label>
+                        <input type="date" id="input-startDate" value="${budget ? budget.startDate : '2026-05-01'}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Expiration Close</label>
+                        <input type="date" id="input-endDate" value="${budget ? budget.endDate : '2026-05-31'}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" required>
+                    </div>
+                </div>
+            `;
+            openModal(title, html, 'budgets', id, false);
+        }
+
+        // FULL EXPENSE OPERATION HANDLING (PUT AND PATCH LOGIC INCLUDED HERE)
+        function openExpenseModal(id = null, isPatch = false) {
+            const expense = id ? state.expenses.find(e => e.id == id) : null;
+            const title = expense ? (isPatch ? `Patch Transaction ledger #${id}` : `Replace Transaction ledger #${id}`) : "Log New Transaction Allocation Entry";
+
+            const userOptions = state.users.map(u => `<option value="${u.id}" ${expense && expense.userId == u.id ? 'selected' : ''}>${u.name}</option>`).join('');
+            const budgetOptions = state.budgets.map(b => `<option value="${b.id}" ${expense && expense.budgetId == b.id ? 'selected' : ''}>Budget Plan #${b.id} (${getUserName(b.userId)})</option>`).join('');
+
+            const html = `
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Transaction Owner Assignment</label>
+                    <select id="input-userId" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" ${expense && !isPatch ? 'required' : ''}>
+                        <option value="">-- Choose Profile Map --</option>
+                        ${userOptions}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Reference Active Budget Node</label>
+                    <select id="input-budgetId" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" ${expense && !isPatch ? 'required' : ''}>
+                        <option value="">-- Choose Account Allocation Map --</option>
+                        ${budgetOptions}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Transaction Meta Title</label>
+                    <input type="text" id="input-title" value="${expense ? expense.title : ''}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" ${expense && !isPatch ? 'required' : ''}>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Observed Cost Value (MMK)</label>
+                    <input type="number" id="input-amount" value="${expense ? expense.amount : ''}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" ${expense && !isPatch ? 'required' : ''}>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Posting Calendar Date</label>
+                    <input type="date" id="input-expenseDate" value="${expense ? expense.expenseDate : '2026-05-26'}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" ${expense && !isPatch ? 'required' : ''}>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Annotation Context Comments</label>
+                    <textarea id="input-note" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 h-20">${expense ? expense.note : ''}</textarea>
+                </div>
+            `;
+            openModal(title, html, 'expenses', id, isPatch);
+        }
+
+        // RESTful Method Commit Handler Block
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const entityType = document.getElementById('form-type').value;
+            const entityId = document.getElementById('form-id').value;
+            const isPatch = document.getElementById('form-patch-mode').value === "true";
+
+            let payload = {};
+            const inputElements = document.querySelectorAll('#form-fields input, #form-fields select, #form-fields textarea');
+
+            inputElements.forEach(input => {
+                const key = input.id.replace('input-', '');
+                if (!isPatch || input.value.trim() !== '') {
+                    payload[key] = input.value;
+                }
+            });
+
+            if (entityId) {
+                // UPDATE RECORD OPERATION
+                const index = state[entityType].findIndex(item => item.id == entityId);
+                if (index !== -1) {
+                    if (isPatch) {
+                        state[entityType][index] = { ...state[entityType][index], ...payload };
+                        showToast('PATCH', `/api/${entityType}/${entityId}`);
+                    } else {
+                        payload.id = parseInt(entityId);
+                        if (entityType === 'users') payload.createdDate = state[entityType][index].createdDate;
+                        state[entityType][index] = payload;
+                        showToast('PUT', `/api/${entityType}/${entityId}`);
+                    }
+                }
+            } else {
+                // CREATE NEW RECORD RECORD ENGINE
+                payload.id = state[entityType].length ? Math.max(...state[entityType].map(o => o.id)) + 1 : 1;
+                if (entityType === 'users') payload.createdDate = "2026-05-26";
+                state[entityType].push(payload);
+                showToast('POST', `/api/${entityType}`);
+            }
+
+            closeModal();
+            renderAll();
+        }
+
+        function deleteEntity(entityType, id) {
+            if (confirm(`Confirm destruction authorization command on data record mapping node #${id}?`)) {
+                state[entityType] = state[entityType].filter(x => x.id != id);
+                showToast('DELETE', `/api/${entityType}/${id}`);
+                renderAll();
+            }
+        }
+
+        // Initialize Engine State Sequence On Load
+        window.onload = function () {
+            renderAll();
+        };
+    </script>
+</body>
+
+</html>
